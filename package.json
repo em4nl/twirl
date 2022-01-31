@@ -1,0 +1,11 @@
+{
+  "name": "turbo",
+  "version": "0.0.0",
+  "description": "Ajaxifier, almost-a-router",
+  "main": "src/turbo.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Emanuel Tannert <post@etannert.de>",
+  "license": "UNLICENSED"
+}
