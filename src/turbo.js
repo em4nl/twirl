@@ -202,9 +202,9 @@ turbo.start = function () {
 // catchAll
 // start
 
-document.addEventlistener("touchstart", hoverHandler);
-document.addEventlistener("mouseenter", hoverHandler);
-document.addEventlistener("click", clickHandler);
+document.addEventListener("touchstart", hoverHandler);
+document.addEventListener("mouseenter", hoverHandler);
+document.addEventListener("click", clickHandler);
 window.addEventListener("popstate", popstateHandler);
 
 window.turbo = turbo;
