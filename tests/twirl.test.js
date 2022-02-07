@@ -32,6 +32,34 @@ function resetCallCounters() {
   callCounters.pageType3.withBody = 0;
 }
 
+var mockAjaxTimeout = 0;
+var mockAjaxFail = false;
+var mockAjaxCalls = [];
+
+function mockAjax(href, callback) {
+  var mockXHR = {
+    aborted: false,
+    abort: function () {
+      this.aborted = true;
+    },
+  };
+  setTimeout(function () {
+    if (mockAjaxFail) {
+      callback(true, "");
+    } else {
+      callback(false, "");
+    }
+  }, mockAjaxTimeout);
+  mockAjaxCalls.push({
+    href: href,
+    callback: callback,
+    mockXHR: mockXHR,
+  });
+  return mockXHR;
+}
+
+window.ajax = mockAjax;
+
 beforeAll(function () {
   var bodyStartHTML = fs.readFileSync("./tests/body-start.html");
   document.body.classList.add("page-type-0");
@@ -110,4 +138,11 @@ test("initial dispatch calls right callback", function () {
   expect(callCounters.pageType2.withBody).toBe(0);
   expect(callCounters.pageType3.withoutBody).toBe(1);
   expect(callCounters.pageType3.withBody).toBe(0);
+});
+
+test("clicking link will fire route", function () {
+  var link1 = document.querySelector(".first-link");
+  mockAjaxCalls = [];
+  link1.dispatchEvent(new Event("click", { bubbles: true }));
+  expect(mockAjaxCalls.length).toBe(1);
 });

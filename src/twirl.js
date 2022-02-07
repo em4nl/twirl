@@ -185,7 +185,7 @@ function loadHandlerFactory() {
   function onLoad(err, resText) {
     loadHandler(xhr, err, resText);
   }
-  return { setXHR: setHXR, onLoad: onLoad };
+  return { setXHR: setXHR, onLoad: onLoad };
 }
 
 function popstateHandler(event) {
