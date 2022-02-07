@@ -10,10 +10,10 @@ var leaveCallbacks = Object.create(null);
  * window.location reflects user intent;
  * after link click or popstate, window.location is set to the new
  * url immediately.
- * currentURL reflects actual turbo state;
+ * currentURL reflects actual twirl state;
  * it will only be changed after the load of a requested page is
  * complete. it's the page we're actually looking at as far as
- * turbo is concerned, minus any transitions.
+ * twirl is concerned, minus any transitions.
  * */
 
 var currentURL = new URL(window.location.href);
@@ -32,15 +32,15 @@ function isSameServerURL(urlA, urlB) {
   );
 }
 
-function turbo(className, enterCallback) {
+function twirl(className, enterCallback) {
   enterCallbacks[className] = enterCallback;
 }
 
 function isCapturedURL(url) {
   return (
     url.origin === localOrigin &&
-    (turbo.base
-      ? url.pathname.slice(0, turbo.base.length) === turbo.base
+    (twirl.base
+      ? url.pathname.slice(0, twirl.base.length) === twirl.base
       : true)
   );
 }
@@ -66,7 +66,7 @@ function hoverHandler(event) {
   var lh = loadHandlerFactory();
   preloadXHR = ajax(preloadURL.href, lh.onLoad);
   lh.setXHR(preloadHXR);
-  if (turbo.onPreloadStart) turbo.onPreloadStart();
+  if (twirl.onPreloadStart) twirl.onPreloadStart();
 }
 
 function clickHandler(event) {
@@ -93,32 +93,35 @@ function navigateTo(url) {
   // b/c popState also sets the url immediately
   history.pushState(null, "", url.href);
   event.preventDefault();
-  if (isSameServerURL(url, loadURL)) return;
+  if (loadURL && isSameServerURL(url, loadURL)) return;
   if (loadXHR) loadXHR.abort();
   loadURL = url;
-  if (isSameServerURL(preloadURL, loadURL)) {
+  if (preloadURL && isSameServerURL(preloadURL, loadURL)) {
     loadXHR = preloadXHR;
     if (preloadRes) {
       var res = preloadRes;
       preloadRes = void 0;
       setTimeout(loadHandler.bind(null, loadXHR, null, res), 0);
-      if (turbo.onLoadStart) turbo.onLoadStart();
-      if (turbo.onLoadEnd) turbo.onLoadEnd();
+      if (twirl.onLoadStart) twirl.onLoadStart();
+      if (twirl.onLoadEnd) twirl.onLoadEnd();
     } else {
-      if (turbo.onPreloadEnd) turbo.onPreloadEnd();
-      if (turbo.onLoadStart) turbo.onLoadStart();
+      if (twirl.onPreloadEnd) twirl.onPreloadEnd();
+      if (twirl.onLoadStart) twirl.onLoadStart();
     }
   } else {
+    // TODO why do we assume here that preload is running?
+    // oh maybe b/c it would have been triggered by the hover event
+    // before this but I just dispatched a click ... ah shit
     if (!preloadRes) {
-      preloadXHR.abort();
-      if (turbo.onPreloadEnd) turbo.onPreloadEnd();
+      if (preloadXHR) preloadXHR.abort();
+      if (twirl.onPreloadEnd) twirl.onPreloadEnd();
     } else {
       preloadRes = void 0;
     }
     var lh = loadHandlerFactory();
     loadXHR = ajax(loadURL.href, lh.onLoad);
     lh.setXHR(loadXHR);
-    if (turbo.onLoadStart) turbo.onLoadStart();
+    if (twirl.onLoadStart) twirl.onLoadStart();
   }
   preloadURL = void 0;
   preloadXHR = void 0;
@@ -132,12 +135,12 @@ function loadHandler(xhr, err, resText) {
     } else {
       preloadRes = resText;
     }
-    if (turbo.onPreloadEnd) turbo.onPreloadEnd();
+    if (twirl.onPreloadEnd) twirl.onPreloadEnd();
     return;
   }
-  if (turbo.onLoadEnd) turbo.onLoadEnd();
+  if (twirl.onLoadEnd) twirl.onLoadEnd();
   if (err) {
-    if (turbo.onLoadError) turbo.onLoadError(xhr, resText);
+    if (twirl.onLoadError) twirl.onLoadError(xhr, resText);
     else alert("load error :(");
     return;
   }
@@ -160,7 +163,7 @@ function loadHandler(xhr, err, resText) {
   if (!body) return;
   if (dispatchEnter(body)) return;
   document.body = body;
-  if (turbo.catchAll) turbo.catchAll(body);
+  if (twirl.catchAll) twirl.catchAll(body);
 }
 
 function dispatchEnter(body, passBody) {
@@ -189,7 +192,7 @@ function popstateHandler(event) {
   navigateTo(new URL(window.location.href));
 }
 
-turbo.start = function () {
+twirl.start = function () {
   dispatchEnter(document.body, false);
 };
 
@@ -207,4 +210,4 @@ document.addEventListener("mouseenter", hoverHandler);
 document.addEventListener("click", clickHandler);
 window.addEventListener("popstate", popstateHandler);
 
-window.turbo = turbo;
+window.twirl = twirl;

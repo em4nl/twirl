@@ -1,8 +1,8 @@
 {
-  "name": "turbo",
+  "name": "twirl",
   "version": "0.0.0",
-  "description": "Ajaxifier, almost-a-router",
-  "main": "src/turbo.js",
+  "description": "ajaxification engine",
+  "main": "src/twirl.js",
   "scripts": {
     "test": "jest"
   },
